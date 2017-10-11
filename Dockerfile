@@ -1,17 +1,15 @@
 FROM lsiobase/xenial
-MAINTAINER sparklyballs
+MAINTAINER sathed
 
-# set version label
-ARG BUILD_DATE
-ARG VERSION
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-
-# environment settings
+# environment settings
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV HOME="/config" \
 PYTHONIOENCODING=utf-8
 
-# install packages
+# add get-pip.py for pip installation
+COPY get-pip.py /get-pip/get-pip.py
+
+# install packages
 RUN \
  echo "deb http://ppa.launchpad.net/jcfp/nobetas/ubuntu xenial main" >> /etc/apt/sources.list.d/sabnzbd.list && \
  echo "deb-src http://ppa.launchpad.net/jcfp/nobetas/ubuntu xenial main" >> /etc/apt/sources.list.d/sabnzbd.list && \
@@ -27,14 +25,17 @@ RUN \
 	unrar \
 	unzip && \
 
-# cleanup
+# cleanup
  apt-get clean && \
  rm -rf \
 	/tmp/* \
 	/var/lib/apt/lists/* \
 	/var/tmp/*
 
-# add local files
+RUN python /get-pip/get-pip.py && \
+	pip install urllib3 chardet certifi pyopenssl
+
+# add local files
 COPY root/ /
 
 # ports and volumes
